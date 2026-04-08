@@ -1,0 +1,31 @@
+[project]
+name = "react-debugger"
+version = "0.1.0"
+description = "Autonomous Python Debugger using ReAct + LangGraph + Ollama"
+authors = [{name = "You"}]
+requires-python = ">=3.10"
+
+dependencies = [
+    # Core LangChain ecosystem (NEW split)
+    "langchain>=0.2.10",
+    "langchain-core>=0.2.20",
+    "langchain-community>=0.2.10",
+    "langchain-ollama>=0.1.0",
+
+    # LangGraph (stateful agents)
+    "langgraph>=0.2.0",
+
+    # Observability
+    "langsmith>=0.1.120",
+
+    # Ollama integration
+    "ollama>=0.3.0",
+
+    # Utilities
+    "pydantic>=2.7",
+    "python-dotenv>=1.0",
+    "rich>=13.7",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
