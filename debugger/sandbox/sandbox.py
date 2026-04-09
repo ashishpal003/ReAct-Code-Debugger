@@ -5,6 +5,7 @@ This is CRITICAL:
 - Prevents breaking your system
 - Isolates dependencies
 - Allows repeatable debugging
+- Auto cleanup (important for long-running systems)
 """
 
 import os
@@ -13,20 +14,19 @@ import subprocess
 import uuid
 
 class Sandbox:
-    def __init__(self, source_path: str, root_dir: str):
+    def __init__(self, source_path: str, root_dir: str, auto_cleanup: bool = True):
         self.source_path = source_path
         self.root_dir = root_dir
+        self.auto_cleanup = auto_cleanup
 
         # Unique run ID
         self.id = str(uuid.uuid4())[:8]
 
-        # Sandbix directory
+        # Sandbox directory
         self.path = os.path.join(root_dir, f"run_{self.id}")
-
 
         # Virtual environment path
         self.venv_path = os.path.join(self.path, "venv")
-
 
     # -------------------------
     # Setup Methods
@@ -88,3 +88,27 @@ class Sandbox:
         self.create()
         self.create_venv()
         self.install_dependencies()
+
+    def cleanup(self):
+        """
+        Delete sandbox safely
+        """
+        if os.path.exists(self.path) and self.path.startswith(self.root_dir):
+            print(f"🧹 Cleaning up sandbox: {self.path}")
+            shutil.rmtree(self.path, ignore_errors=True)
+        else:
+            print("⚠️ Skipping cleanup (unsafe path)")
+
+    def __enter__(self):
+        """
+        Automatically called when entering `with` block
+        """
+        self.setup()
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """
+        Automatically called when exiting `with` block
+        """
+        if self.auto_cleanup:
+            self.cleanup()

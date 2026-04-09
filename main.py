@@ -2,30 +2,32 @@
 Entry point to test Phase 1
 """
 
-from debugger.config.langsmith import setup_langsmith
 from debugger.config.settings import settings
-from debugger.llm.llm import get_llm
 from debugger.sandbox.sandbox import Sandbox
+from debugger.execution.runner import Runner
+from debugger.analysis.issue_analyzer import IssueAnalyzer
 
 
 def main():
-    # Setup tracing
-    setup_langsmith()
+    with Sandbox(source_path="/Users/ashishpal/Documents/GenAI_Projects/for_testing/example_project", root_dir=settings.sandbox_root) as sandbox:
 
-    # Initialize LLM
-    llm = get_llm()
+        # Step 1: Run code
+        runner = Runner(sandbox)
+        result = runner.run("main.py")
 
-    print("Testing LLM...")
-    response = llm.invoke("Say hello from the debugger agent")
+        print("\n--- STDOUT ---")
+        print(result.stdout)
 
-    print("LLM Response: ", response.content)
+        print("\n--- STDERR ---")
+        print(result.stderr)
 
-    # Test Sandbox
-    print("\nTesting Sandbox...")
-    sandbox = Sandbox(source_path=".", root_dir=settings.sandbox_root)
-    sandbox.setup()
+        # Step 2: Analyze issues
+        analyzer = IssueAnalyzer()
+        issue = analyzer.analyze(result)
 
-    print("Sandbox ready at: ", sandbox.path)
+        print("\n--- ISSUE DETECTED ---")
+        print(issue)
+
 
 if __name__ == "__main__":
     main()
