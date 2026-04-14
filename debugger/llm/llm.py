@@ -20,7 +20,7 @@ def get_llm():
 
     llm = ChatOllama(
         model=settings.ollama_model,
-        temperature=0
+        temperature=0,
     )
 
     return llm

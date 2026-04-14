@@ -1,7 +1,3 @@
-"""
-Entry point for the ReAct Code Debugger.
-"""
-
 from debugger.config.langsmith import setup_langsmith
 from debugger.config.settings import settings
 from debugger.sandbox.sandbox import Sandbox
@@ -9,12 +5,12 @@ from debugger.agent.graph import build_debugger_graph
 
 
 def main():
-    # Enable LangSmith tracing
     setup_langsmith()
 
-    project_path = "/Users/ashishpal/Documents/GenAI_Projects/for_testing/example_project"  # Replace with your project
+    project_path = "/Users/ashishpal/Documents/GenAI_Projects/for_testing/example_project"
     entry_file = "main.py"
 
+    print(f"Using model: {settings.ollama_model}")
     print("🚀 Starting ReAct Debugger...\n")
 
     with Sandbox(
@@ -36,13 +32,12 @@ def main():
             "completed": False,
         }
 
-        result = graph.invoke(initial_state)
+        final_state = graph.invoke(initial_state)
 
         print("\n✅ Debugging Complete!")
-        print("\n🔧 Suggested Fixes:\n")
-
-        for i, fix in enumerate(result.get("fixes", []), start=1):
-            print(f"{i}. {fix}\n")
+        print("\n🔧 Fixes Suggested:\n")
+        for i, fix in enumerate(final_state.get("fixes", []), 1):
+            print(f"{i}. {fix}")
 
 
 if __name__ == "__main__":

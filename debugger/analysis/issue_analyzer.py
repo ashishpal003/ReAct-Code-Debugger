@@ -35,7 +35,7 @@ class IssueAnalyzer:
             module = match.group(1) if match else None
 
             return Issue(
-                type="missung_dependency",
+                type="missing_dependency",
                 message=stderr,
                 fix_hint=f"Install package: {module}"
             )

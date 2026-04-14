@@ -2,31 +2,30 @@
 Defines the state for the LangGraph debugging agent.
 """
 
-from typing import TypedDict, List, Optional
-from debugger.analysis.issue_analyzer import Issue
+from typing import TypedDict, List, Any, Optional
+from langchain_core.messages import BaseMessage
 from debugger.execution.runner import ExecutionResult
+from debugger.analysis.issue_analyzer import Issue
+
 
 class DebuggerState(TypedDict, total=False):
-    """
-    Represents the shared state of the debugging workflow.
-    """
-
     # Input
     project_path: str
     entry_file: str
 
-    # Excution artifacts
-    sandbox: object
-    execution_result: ExecutionResult
+    # Sandbox
+    sandbox: Any
+
+    # Execution Data
+    execution_result: Optional[ExecutionResult]
+    execution_output: Optional[str]
     issue: Optional[Issue]
 
-    # Iteration control
+    # Agent Memory
+    messages: List[BaseMessage]
+    fixes: List[str]
+
+    # Iteration Control
     iteration: int
     max_iterations: int
-
-    # Agent reasoning trace
-    message: List
-
-    # Output
-    fixes: List[str]
     completed: bool
