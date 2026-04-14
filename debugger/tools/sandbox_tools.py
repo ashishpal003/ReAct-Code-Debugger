@@ -6,16 +6,19 @@ Compatible with LangChain's tool-calling interface.
 import os
 import subprocess
 from langchain_core.tools import tool
+from debugger.analysis.dependency_mapper import map_import_to_package
 
 SANDBOX_PATH = None
 VENV_PATH = None
+INSTALLED_PACKAGES = set()
 
 
 def configure_sandbox_tools(sandbox):
     """Inject sandbox context into tools."""
-    global SANDBOX_PATH, VENV_PATH
+    global SANDBOX_PATH, VENV_PATH, INSTALLED_PACKAGES
     SANDBOX_PATH = sandbox.path
     VENV_PATH = sandbox.venv_path
+    INSTALLED_PACKAGES = set()
 
 
 def _get_pip_path():
@@ -53,13 +56,24 @@ def write_file(file_path: str, content: str) -> str:
 @tool
 def install_package(package: str) -> str:
     """Install a Python package inside the sandbox."""
+    global INSTALLED_PACKAGES
+
     try:
+        package = map_import_to_package(package)
+
+        if package in INSTALLED_PACKAGES:
+            return f"{package} is already installed. Skipping."
+        
         result = subprocess.run(
             [_get_pip_path(), "install", package],
             cwd=SANDBOX_PATH,
             capture_output=True,
             text=True,
         )
+
+        if result.returncode == 0:
+            INSTALLED_PACKAGES.add(package)
+
         return result.stdout + result.stderr
     except Exception as e:
         return f"Installation failed: {e}"

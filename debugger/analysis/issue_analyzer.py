@@ -7,6 +7,8 @@ Transforms raw execution errors into structured issues.
 import re
 from dataclasses import dataclass
 from typing import Optional
+from debugger.analysis.dependency_mapper import map_import_to_package
+
 
 @dataclass
 class Issue:
@@ -32,7 +34,7 @@ class IssueAnalyzer:
         # -------------------------
         if "ModuleNotFoundError" in stderr:
             match = re.search(r"No module named '(.+?)'", stderr)
-            module = match.group(1) if match else None
+            module = map_import_to_package(match.group(1)) if match else None
 
             return Issue(
                 type="missing_dependency",
