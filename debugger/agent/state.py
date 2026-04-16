@@ -2,10 +2,11 @@
 Defines the state for the LangGraph debugging agent.
 """
 
-from typing import TypedDict, List, Any, Optional
+from typing import Annotated, TypedDict, List, Any, Optional
 from langchain_core.messages import BaseMessage
 from debugger.execution.runner import ExecutionResult
 from debugger.analysis.issue_analyzer import Issue
+from langgraph.graph.message import add_messages
 
 
 class DebuggerState(TypedDict, total=False):
@@ -22,7 +23,7 @@ class DebuggerState(TypedDict, total=False):
     issue: Optional[Issue]
 
     # Agent Memory
-    messages: List[BaseMessage]
+    messages: Annotated[List[BaseMessage], add_messages]
     fixes: List[str]
 
     # Iteration Control

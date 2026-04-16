@@ -2,7 +2,7 @@ from debugger.config.langsmith import setup_langsmith
 from debugger.config.settings import settings
 from debugger.sandbox.sandbox import Sandbox
 from debugger.agent.graph import build_debugger_graph
-from debugger.reporting.report_generator import generate_report, summarise_report
+from debugger.reporting.report_generator import generate_report
 
 
 def main():
@@ -40,10 +40,8 @@ def main():
         # for i, fix in enumerate(final_state.get("fixes", []), 1):
         #     print(f"{i}. {fix}")
 
-        report = generate_report(final_state)
-        print(report)
-        print()
-        print(summarise_report(report))
+        final_state["model_name"] = settings.ollama_model
+        print(generate_report(final_state))
 
 
 if __name__ == "__main__":
