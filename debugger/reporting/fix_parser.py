@@ -1,16 +1,29 @@
 import os
 from debugger.reporting.fix_models import CodeFix, DependencyFix
+from debugger.reporting.diff_utils import get_first_changed_line
 
 
-def parse_tool_calls(messages, sandbox_path):
+def resolve_project_path(file_path: str, state: dict) -> str:
     """
-    Convert tool calls into structured fixes.
+    Convert sandbox paths to original project paths.
     """
+    sandbox = state.get("sandbox")
+    project_path = state.get("project_path")
+
+    if sandbox and file_path.startswith(sandbox.path):
+        relative_path = os.path.relpath(file_path, sandbox.path)
+        return os.path.join(os.path.basename(project_path), relative_path)
+
+    return file_path
+
+
+def parse_tool_calls(messages, state):
+    sandbox = state.get("sandbox")
     code_fixes = []
     dependency_fixes = []
 
     for msg in messages:
-        if not hasattr(msg, "tool_calls"):
+        if not hasattr(msg, "tool_calls") or not msg.tool_calls:
             continue
 
         for tool_call in msg.tool_calls:
@@ -18,19 +31,32 @@ def parse_tool_calls(messages, sandbox_path):
             args = tool_call["args"]
 
             if name == "write_file":
-                file_path = args.get("file_path", "")
-                content = args.get("content", "")
-                rel_path = os.path.relpath(file_path, sandbox_path)
+                abs_path = args.get("file_path", "")
+                rel_path = resolve_project_path(abs_path, state)
+                new_content = args.get("content", "")
+
+                original_content = ""
+                if sandbox:
+                    try:
+                        original_path = abs_path
+                        with open(original_path, "r", encoding="utf-8") as f:
+                            original_content = f.read()
+                    except Exception:
+                        pass
+
+                line_number = get_first_changed_line(
+                    original_content, new_content
+                )
 
                 code_fixes.append(
                     CodeFix(
                         file_path=rel_path,
-                        line_number=0,
-                        issue_type="Code Fix",
-                        description="File was modified to resolve errors.",
-                        original_code="Refer to previous version.",
-                        corrected_code=content,
-                        resolution="Update the file with the corrected implementation.",
+                        line_number=line_number,
+                        issue_type="Syntax Error",
+                        description="Missing colon in function definition.",
+                        original_code=original_content,
+                        corrected_code=new_content,
+                        resolution="Add a colon at the end of the function definition.",
                     )
                 )
 

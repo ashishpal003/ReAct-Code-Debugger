@@ -75,7 +75,7 @@ def build_debugger_graph():
         },
     )
 
-    workflow.add_edge("tools", "execute")
+    workflow.add_edge("tools", "increment")
     workflow.add_edge("increment", "execute")
 
     return workflow.compile()

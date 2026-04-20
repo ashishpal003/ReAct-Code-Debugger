@@ -142,5 +142,5 @@ Fix the issue using the tools.
 # -------------------------
 def increment_iteration(state):
     """Increment iteration counter."""
-    state["iteration"] += 1
+    state["iteration"] = state.get("iteration", 0) + 1
     return state
